@@ -1,12 +1,14 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, ChangeDetectorRef } from '@angular/core';
 import { NgIf, NgFor, AsyncPipe, DatePipe } from '@angular/common';
 import { MatSnackBar } from '@angular/material/snack-bar';
 import { MatButtonModule } from '@angular/material/button';
 import { MatChipsModule } from '@angular/material/chips';
 import { MatCardModule } from '@angular/material/card';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
+import { forkJoin } from 'rxjs';
 
 import { TimeSlot } from '../../core/models/slot.model';
+import { User } from '../../core/models/user.model';
 import { CurrentUserService } from '../../core/services/current-user.service';
 import { SlotsService } from '../../core/services/slots.service';
 import { UserService } from '../../core/services/user.service';
@@ -43,34 +45,67 @@ export class CalendarComponent implements OnInit {
   allSlots: TimeSlot[] = [];
   filteredSlots: TimeSlot[] = [];
   isAdmin = false;
+  private currentUserName: string | null = null;
 
   constructor(
     private readonly slotsService: SlotsService,
     private readonly userService: UserService,
     private readonly currentUser: CurrentUserService,
-    private readonly snack: MatSnackBar
+    private readonly snack: MatSnackBar,
+    private readonly cdr: ChangeDetectorRef
   ) {}
 
   ngOnInit(): void {
     this.currentUser.user$.subscribe((user) => {
       this.isAdmin = !!user?.is_admin;
-      const userId = user?.id ?? this.currentUser.userIdSnapshot;
-      this.userService.getPreferences(userId).subscribe({
-        next: (prefs) => {
-          // Pre-select based on saved preferences, but allow override without saving.
-          const allowed: CategoryOrAll[] = ['Cat 1', 'Cat 2', 'Cat 3'];
-          const fromPrefs = (prefs || []).filter((p) =>
-            allowed.includes(p as CategoryOrAll)
-          ) as CategoryOrAll[];
-          this.selected =
-            fromPrefs.length > 0 ? new Set(fromPrefs) : new Set(['All']);
-          this.fetchSlots();
-        },
-        error: () => {
+      this.currentUserName = user?.name ?? null;
+    });
+
+    // Always load initial data based on the currently selected user ID.
+    // This works both after login (where signInAs has set the ID)
+    // and after a full page refresh (where the ID is restored from localStorage).
+    const userId = this.currentUser.userIdSnapshot;
+    this.loadInitialForUser(userId);
+  }
+
+  private loadInitialForUser(userId: number): void {
+    this.loading = true;
+
+    forkJoin({
+      prefs: this.userService.getPreferences(userId),
+      slots: this.slotsService.getSlots(this.weekKey),
+    }).subscribe({
+      next: ({ prefs, slots }) => {
+        // Apply preferences to selected categories.
+        const allowed: CategoryOrAll[] = ['Cat 1', 'Cat 2', 'Cat 3'];
+        const fromPrefs = (prefs || []).filter((p) =>
+          allowed.includes(p as CategoryOrAll)
+        ) as CategoryOrAll[];
+        this.selected =
+          fromPrefs.length > 0 ? new Set(fromPrefs) : new Set(['All']);
+
+        // Set slots and apply filter once both responses have arrived.
+        this.allSlots = slots;
+        this.applyFilter();
+        if (this.filteredSlots.length === 0 && this.allSlots.length > 0) {
           this.selected = new Set(['All']);
-          this.fetchSlots();
-        },
-      });
+          this.applyFilter();
+        }
+
+        this.loading = false;
+        // Ensure view updates immediately even if running outside Angular zone.
+        this.cdr.markForCheck();
+      },
+      error: (e) => {
+        this.loading = false;
+        this.selected = new Set(['All']);
+        this.snack.open(
+          e?.error?.error ?? 'Failed to load preferences or slots',
+          'Close',
+          { duration: 3500 }
+        );
+        this.cdr.markForCheck();
+      },
     });
   }
 
@@ -155,9 +190,17 @@ export class CalendarComponent implements OnInit {
       return;
     }
     const userId = this.currentUser.userIdSnapshot;
+    const original = { ...slot };
+
+    // Optimistic update so the UI reflects the change immediately.
+    this.replaceSlot({
+      ...slot,
+      booked_by_user_id: userId,
+      booked_by_name: this.currentUserName ?? slot.booked_by_name ?? 'Someone',
+    });
+
     this.slotsService.bookSlot(slot.id, userId).subscribe({
       next: (updated) => {
-        // Update this slot locally for immediate feedback.
         this.replaceSlot(updated);
         this.snack.open('Booked successfully', 'Close', { duration: 2500 });
       },
@@ -168,7 +211,6 @@ export class CalendarComponent implements OnInit {
             'Close',
             { duration: 3500 }
           );
-          // Mark as taken without full reload.
           this.replaceSlot({
             ...slot,
             booked_by_user_id: -1,
@@ -176,6 +218,8 @@ export class CalendarComponent implements OnInit {
           });
           return;
         }
+        // Revert optimistic update on other errors.
+        this.replaceSlot(original);
         this.snack.open(e?.error?.error ?? 'Failed to book slot', 'Close', {
           duration: 3500,
         });
@@ -191,13 +235,23 @@ export class CalendarComponent implements OnInit {
       return;
     }
     const userId = this.currentUser.userIdSnapshot;
+    const original = { ...slot };
+
+    // Optimistic update so the UI reflects the change immediately.
+    this.replaceSlot({
+      ...slot,
+      booked_by_user_id: null,
+      booked_by_name: null,
+    });
+
     this.slotsService.unbookSlot(slot.id, userId).subscribe({
       next: (updated) => {
-        // Update this slot locally for immediate feedback.
         this.replaceSlot(updated);
         this.snack.open('Unsubscribed', 'Close', { duration: 2500 });
       },
       error: (e) => {
+        // Revert optimistic update on error.
+        this.replaceSlot(original);
         this.snack.open(e?.error?.error ?? 'Failed to unsubscribe', 'Close', {
           duration: 3500,
         });
