@@ -1,0 +1,24 @@
+<div class="page">
+  <mat-card>
+    <mat-card-title>Category Preferences</mat-card-title>
+    <mat-card-subtitle>Select which categories to pre-select on the calendar.</mat-card-subtitle>
+
+    <mat-card-content>
+      <div class="prefs">
+        <mat-checkbox [formControl]="form.controls.cat1">Cat 1</mat-checkbox>
+        <mat-checkbox [formControl]="form.controls.cat2">Cat 2</mat-checkbox>
+        <mat-checkbox [formControl]="form.controls.cat3">Cat 3</mat-checkbox>
+      </div>
+    </mat-card-content>
+
+    <mat-card-actions align="end">
+      <button mat-stroked-button color="primary" [disabled]="loading" (click)="save(false)">
+        Save
+      </button>
+      <button mat-flat-button color="primary" [disabled]="loading" (click)="save(true)">
+        Save &amp; Go to Calendar
+      </button>
+    </mat-card-actions>
+  </mat-card>
+</div>
+

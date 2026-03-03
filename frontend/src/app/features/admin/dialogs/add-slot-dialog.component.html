@@ -1,0 +1,48 @@
+<h2 mat-dialog-title>Add Timeslot</h2>
+
+<form [formGroup]="form" (ngSubmit)="submit()">
+  <div mat-dialog-content class="content">
+    <mat-form-field appearance="outline">
+      <mat-label>Category</mat-label>
+      <mat-select formControlName="category" required>
+        <mat-option *ngFor="let c of categories" [value]="c">{{ c }}</mat-option>
+      </mat-select>
+      <mat-error *ngIf="form.controls.category.touched && form.controls.category.invalid"
+        >Category is required</mat-error
+      >
+    </mat-form-field>
+
+    <mat-form-field appearance="outline">
+      <mat-label>Date</mat-label>
+      <input matInput [matDatepicker]="picker" formControlName="date" required />
+      <mat-datepicker-toggle matIconSuffix [for]="picker"></mat-datepicker-toggle>
+      <mat-datepicker #picker></mat-datepicker>
+      <mat-error *ngIf="form.hasError('pastDate')">Date must not be in the past</mat-error>
+    </mat-form-field>
+
+    <div class="row">
+      <mat-form-field appearance="outline">
+        <mat-label>Start Time</mat-label>
+        <input matInput type="time" formControlName="startTime" required />
+      </mat-form-field>
+
+      <mat-form-field appearance="outline">
+        <mat-label>End Time</mat-label>
+        <input matInput type="time" formControlName="endTime" required />
+        <mat-error *ngIf="form.hasError('endBeforeStart')"
+          >End time must be after start time</mat-error
+        >
+      </mat-form-field>
+    </div>
+  </div>
+
+  <div mat-dialog-actions align="end">
+    <button mat-button type="button" [disabled]="saving" (click)="ref.close(false)">
+      Cancel
+    </button>
+    <button mat-flat-button color="primary" type="submit" [disabled]="saving">
+      Create
+    </button>
+  </div>
+</form>
+

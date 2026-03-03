@@ -1,0 +1,61 @@
+<div class="page login-page">
+  <div class="hero">
+    <h1>Welcome to Book Events</h1>
+    <p>Sign in to manage and view your upcoming time slots.</p>
+  </div>
+
+  <div class="cards">
+    <mat-card class="login-card user-card">
+      <mat-card-header>
+        <div mat-card-avatar class="avatar user-avatar">
+          U
+        </div>
+        <mat-card-title>Prithvi</mat-card-title>
+        <mat-card-subtitle>Standard User</mat-card-subtitle>
+      </mat-card-header>
+      <mat-card-content>
+        <p>
+          Browse the calendar, see available slots, and sign up for events that
+          match your interests.
+        </p>
+      </mat-card-content>
+      <mat-card-actions align="end">
+        <button
+          mat-flat-button
+          color="primary"
+          (click)="signInAs(1)"
+          [disabled]="loading"
+        >
+          <span>Sign in as Prithvi</span>
+        </button>
+      </mat-card-actions>
+    </mat-card>
+
+    <mat-card class="login-card admin-card">
+      <mat-card-header>
+        <div mat-card-avatar class="avatar admin-avatar">
+          A
+        </div>
+        <mat-card-title>Admin</mat-card-title>
+        <mat-card-subtitle>Administrator</mat-card-subtitle>
+      </mat-card-header>
+      <mat-card-content>
+        <p>
+          Create and manage time slots, oversee bookings, and keep the schedule
+          running smoothly.
+        </p>
+      </mat-card-content>
+      <mat-card-actions align="end">
+        <button
+          mat-stroked-button
+          color="accent"
+          (click)="signInAs(2)"
+          [disabled]="loading"
+        >
+          <span>Sign in as Admin</span>
+        </button>
+      </mat-card-actions>
+    </mat-card>
+  </div>
+</div>
+

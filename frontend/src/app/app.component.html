@@ -1,0 +1,21 @@
+<mat-toolbar color="primary" class="app-toolbar">
+  <div class="app-toolbar-title">Book Events</div>
+
+  <span class="spacer"></span>
+
+  <div class="app-nav-links" *ngIf="user$ | async as user">
+    <a mat-button routerLink="/calendar">Calendar</a>
+    <a mat-button routerLink="/preferences">Preferences</a>
+    <a *ngIf="user.is_admin" mat-button routerLink="/admin">Admin Panel</a>
+  </div>
+
+  <span class="spacer"></span>
+
+  <div class="app-current-user" *ngIf="user$ | async as user">
+    <span>{{ user.name }} <ng-container *ngIf="user.is_admin">(Admin)</ng-container></span>
+    <button mat-stroked-button color="accent" (click)="goToLogin()">Sign out</button>
+  </div>
+</mat-toolbar>
+
+<router-outlet></router-outlet>
+

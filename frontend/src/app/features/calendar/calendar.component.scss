@@ -1,0 +1,62 @@
+.topbar {
+  display: grid;
+  gap: 12px;
+  margin-bottom: 12px;
+}
+
+.week-nav {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.week-label {
+  font-weight: 600;
+}
+
+.chips {
+  width: 100%;
+}
+
+.loading {
+  display: flex;
+  justify-content: center;
+  padding: 32px;
+}
+
+.grid {
+  display: grid;
+  grid-template-columns: repeat(7, minmax(0, 1fr));
+  gap: 12px;
+}
+
+.day-col {
+  min-width: 0;
+}
+
+.day-header {
+  font-weight: 700;
+  margin-bottom: 8px;
+}
+
+.empty {
+  color: rgba(0, 0, 0, 0.54);
+  font-style: italic;
+  padding: 12px 8px;
+}
+
+.slot-card {
+  margin-bottom: 10px;
+  border: 1px solid rgba(0, 0, 0, 0.08);
+}
+
+.slot-card.mine {
+  border-color: rgba(63, 81, 181, 0.45);
+  background: rgba(63, 81, 181, 0.06);
+}
+
+.slot-card.taken {
+  opacity: 0.65;
+}
+

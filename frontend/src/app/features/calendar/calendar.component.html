@@ -1,0 +1,77 @@
+<div class="page">
+  <div class="topbar">
+    <div class="week-nav">
+      <button mat-button (click)="prevWeek()">
+        ‹ Previous
+      </button>
+      <div class="week-label">{{ weekRangeLabel }}</div>
+      <button mat-button (click)="nextWeek()">
+        Next ›
+      </button>
+    </div>
+
+    <mat-chip-listbox class="chips" multiple>
+      <mat-chip-option
+        *ngFor="let c of categories"
+        [selected]="selected.has(c)"
+        (click)="toggleCategory(c)"
+      >
+        {{ c }}
+      </mat-chip-option>
+    </mat-chip-listbox>
+  </div>
+
+  <div class="loading" *ngIf="loading">
+    <mat-progress-spinner mode="indeterminate"></mat-progress-spinner>
+  </div>
+
+  <div class="grid" *ngIf="!loading">
+    <div class="day-col" *ngFor="let col of slotsByDay">
+      <div class="day-header">{{ col.label }}</div>
+
+      <div *ngIf="col.slots.length === 0" class="empty">No events</div>
+
+      <mat-card
+        *ngFor="let slot of col.slots"
+        class="slot-card"
+        [class.available]="isAvailable(slot)"
+        [class.mine]="isBookedByMe(slot)"
+        [class.taken]="!isAvailable(slot) && !isBookedByMe(slot)"
+      >
+        <mat-card-title>{{ slot.category }}</mat-card-title>
+        <mat-card-subtitle>
+          {{ slot.start_time | date: 'shortTime' : undefined : 'en-IN' }}
+          –
+          {{ slot.end_time | date: 'shortTime' : undefined : 'en-IN' }}
+        </mat-card-subtitle>
+
+        <mat-card-content *ngIf="slot.booked_by_user_id">
+          Booked by: {{ slot.booked_by_name ?? 'Someone' }}
+        </mat-card-content>
+
+        <mat-card-actions align="end">
+          <button
+            *ngIf="isAvailable(slot) && !isAdmin"
+            mat-flat-button
+            color="primary"
+            (click)="asyncBook(slot)"
+          >
+            Sign Up
+          </button>
+
+          <button
+            *ngIf="isBookedByMe(slot) && !isAdmin"
+            mat-stroked-button
+            color="warn"
+            (click)="asyncUnbook(slot)"
+          >
+            Unsubscribe
+          </button>
+
+          <mat-chip *ngIf="!isAvailable(slot) && !isBookedByMe(slot)">Taken</mat-chip>
+        </mat-card-actions>
+      </mat-card>
+    </div>
+  </div>
+</div>
+

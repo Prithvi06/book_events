@@ -1,0 +1,25 @@
+.content {
+  display: grid;
+  gap: 12px;
+  padding-top: 4px;
+}
+
+.row {
+  display: grid;
+  gap: 12px;
+  grid-template-columns: 1fr 1fr;
+}
+
+mat-form-field {
+  width: 100%;
+}
+
+/* Ensure dropdown panel and value have solid backgrounds so text is visible. */
+:host ::ng-deep .mat-mdc-select-panel {
+  background-color: #ffffff !important;
+}
+
+:host ::ng-deep .mat-mdc-select-value {
+  background-color: #ffffff;
+}
+
