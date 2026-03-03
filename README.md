@@ -28,21 +28,6 @@ Users can book weekly event timeslots across 3 categories. Admins can manage slo
 
 ---
 
-##  Tech Stack
-
-### Frontend
-- Angular
-- Angular Material
-- TypeScript
-- RxJS
-
-### Backend
-- Flask
-- Flask-CORS
-- SQLAlchemy
-- SQLite
-
----
 
 #  Prerequisites
 
